@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasky | Modern Task Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Base Variables */
+    :root {
+      --space-dark: #0f172a;
+      --space-darker: #0a0f1d;
+      --space-light: #1e293b;
+      --accent-primary: #7c3aed;
+      --accent-secondary: #38bdf8;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --card-radius: 16px;
+      --element-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    /* Light theme variables */
+    :root.light {
+      --space-dark: #f1f5f9;
+      --space-darker: #e2e8f0;
+      --space-light: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+    }
+
+    /* Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--space-darker), var(--space-dark));
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      line-height: 1.6;
+      transition: var(--transition);
+    }
+
+    /* Background Particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.15);
+      animation: float 20s infinite linear;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+    }
+
+    /* Main Containers */
+    .container, .dashboard {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: var(--card-radius);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(124, 58, 237, 0.1);
+      transition: var(--transition);
+    }
+
+    .dashboard {
+      max-width: 800px;
+    }
+
+    /* Typography */
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* Form Elements */
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px 15px 15px 50px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: var(--element-radius);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+    }
+
+    input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent-primary);
+      font-size: 1.2rem;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: var(--element-radius);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-login {
+      background: linear-gradient(90deg, var(--accent-primary), #6d28d9);
+      color: white;
+    }
+
+    .btn-signup {
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--accent-primary);
+    }
+
+    .btn-add {
+      background: linear-gradient(90deg, var(--accent-primary), #6d28d9);
+      color: white;
+      padding: 0 25px;
+      font-weight: 600;
+    }
+    
+    .logout-btn {
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--danger);
+      padding: 10px 15px;
+      border-radius: var(--element-radius);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .theme-toggle {
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--element-radius);
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(124, 58, 237, 0.2);
+    }
+
+    /* Message Styling */
+    #message {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: var(--element-radius);
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-size: 0.9rem;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Dashboard Styling */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+    }
+    
+    .header-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    #userLabel {
+      color: var(--accent-secondary);
+      font-weight: 600;
+    }
+
+    .task-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .task-bar input {
+      padding: 15px;
+      flex: 1;
+    }
+
+    .task-list {
+      list-style: none;
+    }
+
+    .task-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 15px 20px;
+      border-radius: var(--element-radius);
+      margin-bottom: 15px;
+      border: 1px solid rgba(124, 58, 237, 0.1);
+      transition: var(--transition);
+    }
+
+    .task-list li:hover {
+      transform: translateX(5px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 5px 15px rgba(124, 58, 237, 0.2);
+    }
+
+    .task-content {
+      flex: 1;
+      word-break: break-word;
+      padding-right: 15px;
+    }
+
+    .delete-btn {
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      border-radius: var(--element-radius);
+      padding: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-btn:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--accent-primary);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .container, .dashboard {
+        padding: 25px 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .task-bar {
+        flex-direction: column;
+      }
+      
+      .btn-add {
+        padding: 15px;
+      }
+      
+      header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+      
+      .header-controls {
+        width: 100%;
+        flex-direction: column;
+      }
+      
+      .theme-toggle, .logout-btn {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .dashboard {
+        max-width: 1000px;
+      }
+      
+      .task-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+      }
+      
+      .task-list li {
+        margin-bottom: 0;
+      }
+    }
+
+    /* Utilities */
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background particles -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Login/Signup Page -->
+  <div class="container" id="loginContainer">
+    <h1><i class="fas fa-tasks"></i> Tasky</h1>
+    
+    <div class="form-container">
+      <div class="input-group">
+        <span class="input-icon"><i class="fas fa-user"></i></span>
+        <input type="text" id="username" placeholder="Username" />
+      </div>
+      
+      <div class="input-group">
+        <span class="input-icon"><i class="fas fa-lock"></i></span>
+        <input type="password" id="password" placeholder="Password" />
+      </div>
+      
+      <div class="input-group">
+        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+        <input type="email" id="email" placeholder="Email (signup only)" />
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn-login" onclick="login()">
+          <i class="fas fa-unlock"></i> Login
+        </button>
+        <button class="btn-signup" onclick="signup()">
+          <i class="fas fa-user-plus"></i> Signup
+        </button>
+      </div>
+    </div>
+    
+    <div id="message" class="message">Enter your credentials to continue</div>
+    <div class="spinner" id="spinner"></div>
+  </div>
+  
+  <!-- Dashboard Page -->
+  <div class="dashboard hidden" id="dashboard">
+    <header>
+      <h2><i class="fas fa-user-circle"></i> Welcome, <span id="userLabel">User</span></h2>
+      <div class="header-controls">
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+          <i class="fas fa-moon"></i> Dark Mode
+        </button>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </header>
+    
+    <div class="task-bar">
+      <input type="text" id="taskInput" placeholder="Enter new task..." />
+      <button class="btn-add" onclick="addTask()">
+        <i class="fas fa-plus"></i> Add
+      </button>
+    </div>
+    
+    <ul id="taskList" class="task-list">
+      <!-- Tasks will be added here dynamically -->
+    </ul>
+    <div class="spinner" id="dashboardSpinner"></div>
+  </div>
+  
+  <script>
+    const backendURL = "http://localhost:8080/user";
+    
+    // Create background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 20;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size and position
+        const size = Math.random() * 10 + 2;
+        const posX = Math.random() * 100;
+        const delay = Math.random() * 15;
+        const duration = Math.random() * 10 + 15;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}%`;
+        particle.style.bottom = `-${size}px`;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.animationDuration = `${duration}s`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // Show message with styling
+    function showMessage(msg, isError = false) {
+      const m = document.getElementById("message");
+      if (m) {
+        m.innerText = msg;
+        m.style.background = isError 
+          ? 'rgba(239, 68, 68, 0.15)' 
+          : 'rgba(16, 185, 129, 0.15)';
+        m.style.borderColor = isError 
+          ? 'rgba(239, 68, 68, 0.3)' 
+          : 'rgba(16, 185, 129, 0.3)';
+      }
+    }
+    
+    // Show/hide spinner
+    function showSpinner(show, isDashboard = false) {
+      const spinnerId = isDashboard ? 'dashboardSpinner' : 'spinner';
+      const spinner = document.getElementById(spinnerId);
+      if (spinner) {
+        spinner.style.display = show ? 'block' : 'none';
+      }
+    }
+    
+    // 🟢 Signup
+    function signup() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const email = document.getElementById("email").value;
+      
+      if (!username || !password || !email) {
+        showMessage("All fields are required for signup", true);
+        return;
+      }
+      
+      showMessage("Creating account...");
+      showSpinner(true);
+      
+      fetch(`${backendURL}/signing`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: username, password, email })
+      })
+      .then(res => {
+        showSpinner(false);
+        if (res.ok) {
+          return res.text();
+        }
+        throw new Error('Signup failed');
+      })
+      .then(msg => {
+        showMessage(msg);
+        // After successful signup, automatically login
+        setTimeout(() => login(), 1500);
+      })
+      .catch(error => {
+        showSpinner(false);
+        showMessage("Signup failed. Please try again.", true);
+        console.error('Signup error:', error);
+      });
+    }
+    
+    // 🟢 Login
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      
+      if (!username || !password) {
+        showMessage("Username and password are required", true);
+        return;
+      }
+      
+      showMessage("Authenticating...");
+      showSpinner(true);
+      
+      fetch(`${backendURL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        showSpinner(false);
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error('Login failed');
+      })
+      .then(data => {
+        if (data.userName) {
+          // Use sessionStorage instead of localStorage for session management
+          sessionStorage.setItem("username", data.userName);
+          sessionStorage.setItem("tasks", JSON.stringify(data.remainingWork || []));
+          
+          // Switch to dashboard
+          document.getElementById('loginContainer').classList.add('hidden');
+          document.getElementById('dashboard').classList.remove('hidden');
+          document.getElementById('userLabel').textContent = data.userName;
+          loadTasks();
+          
+          showMessage("Login successful!");
+        } else {
+          showMessage("Login failed. Invalid credentials.", true);
+        }
+      })
+      .catch(error => {
+        showSpinner(false);
+        showMessage("Login failed. Please try again.", true);
+        console.error('Login error:', error);
+      });
+    }
+    
+    // 🔄 Load Tasks
+    function loadTasks() {
+      const tasks = JSON.parse(sessionStorage.getItem("tasks") || "[]");
+      const list = document.getElementById("taskList");
+      
+      list.innerHTML = "";
+      tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div class="task-content">${task}</div>
+          <button class="delete-btn" onclick="removeTask('${task}')">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        `;
+        list.appendChild(li);
+      });
+    }
+    
+    // ➕ Add Task
+    function addTask() {
+      const taskInput = document.getElementById("taskInput");
+      const work = taskInput.value.trim();
+      const user = sessionStorage.getItem("username");
+      
+      if (!work) {
+        showMessage("Task cannot be empty", true);
+        return;
+      }
+      
+      showSpinner(true, true);
+      
+      fetch(`${backendURL}/AddTask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: user, work })
+      })
+      .then(res => {
+        showSpinner(false, true);
+        if (res.ok) {
+          return res.text();
+        }
+        throw new Error('Add task failed');
+      })
+      .then(msg => {
+        // Update session storage
+        const tasks = JSON.parse(sessionStorage.getItem("tasks") || []);
+        tasks.push(work);
+        sessionStorage.setItem("tasks", JSON.stringify(tasks));
+        
+        // Update UI
+        const list = document.getElementById("taskList");
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div class="task-content">${work}</div>
+          <button class="delete-btn" onclick="removeTask('${work}')">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        `;
+        
+        // Add with animation
+        li.style.opacity = "0";
+        li.style.transform = "translateY(20px)";
+        list.appendChild(li);
+        
+        setTimeout(() => {
+          li.style.opacity = "1";
+          li.style.transform = "translateY(0)";
+        }, 10);
+        
+        taskInput.value = "";
+        showMessage("Task added successfully!");
+      })
+      .catch(error => {
+        showSpinner(false, true);
+        showMessage("Failed to add task. Please try again.", true);
+        console.error('Add task error:', error);
+      });
+    }
+    
+    // 🗑️ Remove Task
+    function removeTask(work) {
+      const user = sessionStorage.getItem("username");
+      if (!user) return;
+      
+      showSpinner(true, true);
+      
+      fetch(`${backendURL}/deleteWork`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: user, work })
+      })
+      .then(res => {
+        showSpinner(false, true);
+        if (res.ok) {
+          return res.text();
+        }
+        throw new Error('Delete task failed');
+      })
+      .then(msg => {
+        // Update session storage
+        let tasks = JSON.parse(sessionStorage.getItem("tasks") || []);
+        tasks = tasks.filter(task => task !== work);
+        sessionStorage.setItem("tasks", JSON.stringify(tasks));
+        
+        // Reload tasks in UI
+        loadTasks();
+        showMessage("Task removed successfully!");
+      })
+      .catch(error => {
+        showSpinner(false, true);
+        showMessage("Failed to remove task. Please try again.", true);
+        console.error('Delete task error:', error);
+      });
+    }
+    
+    // 🌙 Theme Toggle
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle("light");
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+      
+      const themeBtn = document.getElementById('themeBtn');
+      if (isDark) {
+        themeBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+      } else {
+        themeBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+      }
+    }
+    
+    // 👋 Logout function
+    function logout() {
+      // Clear session storage
+      sessionStorage.removeItem("username");
+      sessionStorage.removeItem("tasks");
+      
+      // Clear input fields
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+      document.getElementById("email").value = "";
+      
+      // Switch back to login page
+      document.getElementById('loginContainer').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+      
+      showMessage("You have been logged out");
+    }
+    
+    // Initialize the app
+    window.onload = function() {
+      createParticles();
+      
+      // Set theme from localStorage
+      const savedTheme = localStorage.getItem("theme");
+      const themeBtn = document.getElementById('themeBtn');
+      
+      if (savedTheme === "light") {
+        document.documentElement.classList.add("light");
+        themeBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+      } else {
+        themeBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+      }
+      
+      // Check if user is already logged in using sessionStorage
+      const username = sessionStorage.getItem("username");
+      if (username) {
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        document.getElementById('userLabel').textContent = username;
+        loadTasks();
+      } else {
+        showMessage("Please log in to access your tasks");
+      }
+    };
+  </script>
+</body>
+</html>
